@@ -1,0 +1,16 @@
+1.hadoop
+2.zookeeper
+3.mapreduce
+4.hdfs
+5.yarn
+6.flume
+7.spark
+8.fink
+9.mysql
+10.Kafka
+11.scala
+12.hive
+13.java
+14.python
+15.html
+16.JavaScript

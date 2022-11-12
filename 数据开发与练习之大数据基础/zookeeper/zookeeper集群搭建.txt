@@ -1,0 +1,86 @@
+﻿关闭防火墙
+
+1.解压/home/bigdata下的zookeeper压缩包
+tar -zxvf zookeeper-3.4.7.tar.gz 
+2.删除压缩包 给zookeeper重命名
+rm -rf zookeeper-3.4.7.tar.gz
+mv zookeeper-3.4.7/ zookeeper
+3.配置环境变量
+export ZK_HOME=/home/bigdate/zookeeper
+export PATH=$PATH:$ZK_HOME/bin:$ZK_HOME/conf:
+使环境变量生效：source /etc/profile
+4.把修改后的配置文件发送给其他两台机器一份
+scp /etc/profile hadoopnet2:/etc/profile
+scp /etc/profile hadoopnet2:/etc/profile
+使之生效 source /etc/profile
+5.修改zookeeper的配置文件
+	删除 zookeeper/conf 文件夹中的zoo_sample.cfg
+	在·conf目录下创建一个新文件zoo.cfg并添加配置
+tickTime=2000
+initLimit=10
+syncLimit=5
+dataDir=/home/bigdate/zkmyid
+clientPort=2181  对外服务的端口
+server.1=master:2888相互之间通讯的端口:3888投票之间通讯的端口
+server.2=slave1:2888:3888
+server.3=slave2:2888:3888
+
+
+master修改为主机名字
+slave1 slave2 修改为其他两台从机的名字
+
+6.把/home/bigdata下的zookeeper发送给其他两台机器一份
+scp -r zookeeper hadoopnet2:/home/bigdata/zookeeper
+scp -r zookeeper hadoopnet3:/home/bigdata/zookeeper
+7.在此路径下dataDir=/home/bigdata/zkmyid
+创建一个zkmyid文件夹（每台机器都要创建）
+在zkmyid文件夹中创建一个文件myid
+server.1配置所在机器的myid文件里面写1
+server.2配置所在机器的myid文件里面写2
+server.3配置所在机器的myid文件里面写3
+
+ 8启动zookeeper集群zkServer.sh start
+ 如果第一遍操作有误，先要关闭zookeeper ,命令zkServer.sh stop
+查看zookeeper的集群状态zkServer.sh status
+
+验证是否启动成功：jps 查看出现 QuorumPeerMain进程
+sh zkServer.sh status 查看 出现一台leader 两台follower
+即为集群启动成功
+
+关闭zookeeper集群：sh zkServer.sh stop
+
+选举机制是？？？？
+
+首先第一台先开启，这个时候他就会投个选票出去，他投一票出去会落到谁的头上？
+
+投一票后他就是老大了吗？？
+
+不是，因为我们在配置文件里面配置了3台，至少要得到两票，才可以吧，
+
+第一轮结束！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+第二轮开始
+
+那这个时候怎么办呢，等待2的开启
+
+那么2开启后1知不知道呢？？
+
+1不知道，2先投票，先往出投一票，这个时候他投出去的票就会被1接到，这个时候1是不是知道有2的存在呢？？
+
+那么1就会有一票给2
+
+这个时候2不确定只有一台机子，所以还会在投出一票，这个时候因为没有其他机子，所以这个票会在自己头上
+
+这个时候1的想法和2的想法一样，还会在投出一票，这个票会落到自己头上
+
+接下来1和2同时两票，接下来开始pk myid这个文件里面的值
+
+2比1大，所以2为leader
+
+这个时候3开启了，因为已经有了leader，所以就自动为follower
+
+1   2   3
+
+
+
+
+
